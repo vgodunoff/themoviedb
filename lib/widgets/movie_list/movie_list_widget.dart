@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:themoviedb/resources/resources.dart';
 
 class Movie {
+  final int id;
   final String imageName;
   final String title;
   final String time;
   final String description;
 
   Movie(
-      {required this.imageName,
+      {required this.id,
+      required this.imageName,
       required this.title,
       required this.time,
       required this.description});
@@ -26,54 +28,63 @@ class _MovieListWidgetState extends State<MovieListWidget> {
 
   final _movies = [
     Movie(
+        id: 1,
         imageName: AppImages.minions,
         title: 'Minions',
         time: '7 apr 2021',
         description:
             'Миллион лет миньоны искали самого великого и ужасного предводителя, пока не встретили ЕГО'),
     Movie(
+        id: 2,
         imageName: AppImages.minions,
         title: 'Прибытие',
         time: '7 apr 2021',
         description:
             'Миллион лет миньоны искали самого великого и ужасного предводителя, пока не встретили ЕГО'),
     Movie(
+        id: 3,
         imageName: AppImages.minions,
         title: 'Minions',
         time: 'Назад в будущее 1',
         description:
             'Миллион лет миньоны искали самого великого и ужасного предводителя, пока не встретили ЕГО'),
     Movie(
+        id: 4,
         imageName: AppImages.minions,
         title: 'Назад в будущее 2',
         time: '7 apr 2021',
         description:
             'Миллион лет миньоны искали самого великого и ужасного предводителя, пока не встретили ЕГО'),
     Movie(
+        id: 5,
         imageName: AppImages.minions,
         title: 'Тихие зори',
         time: '7 apr 2021',
         description:
             'Миллион лет миньоны искали самого великого и ужасного предводителя, пока не встретили ЕГО'),
     Movie(
+        id: 6,
         imageName: AppImages.minions,
         title: 'В бой идут одни старики',
         time: '7 apr 2021',
         description:
             'Миллион лет миньоны искали самого великого и ужасного предводителя, пока не встретили ЕГО'),
     Movie(
+        id: 7,
         imageName: AppImages.minions,
         title: 'Чаплин',
         time: '7 apr 2021',
         description:
             'Миллион лет миньоны искали самого великого и ужасного предводителя, пока не встретили ЕГО'),
     Movie(
+        id: 8,
         imageName: AppImages.minions,
         title: 'Брат',
         time: '7 apr 2021',
         description:
             'Миллион лет миньоны искали самого великого и ужасного предводителя, пока не встретили ЕГО'),
     Movie(
+        id: 9,
         imageName: AppImages.minions,
         title: 'Брат 2',
         time: '7 apr 2021',
@@ -100,6 +111,11 @@ class _MovieListWidgetState extends State<MovieListWidget> {
     super.initState();
     _filteredMovies = _movies;
     _searchController.addListener(_searchMovie);
+  }
+
+  void _onMovieTap(int index) {
+    final id = _movies[index].id;
+    Navigator.pushNamed(context, '/main_screen/movie_details', arguments: id);
   }
 
   @override
@@ -190,10 +206,7 @@ class _MovieListWidgetState extends State<MovieListWidget> {
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: const BorderRadius.all(Radius.circular(10)),
-                      onTap: () {
-                        // ignore: avoid_print
-                        print('click');
-                      },
+                      onTap: () => _onMovieTap(index),
                     ),
                   )
                 ],
