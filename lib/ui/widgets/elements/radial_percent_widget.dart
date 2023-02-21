@@ -169,7 +169,7 @@ class MyPainter extends CustomPainter {
   }
 
   Rect calculateArcsRect(Size size) {
-    final linesMargin = 3;
+    const linesMargin = 3;
     final offset = lineWidth / 2 + linesMargin;
     final arcRect = Offset(offset, offset) &
         Size(size.width - offset * 2, size.height - offset * 2);
@@ -195,7 +195,7 @@ class MyPainter extends CustomPainter {
 //нужно делить пополам strokeWidth,
 //например paint.strokeWidth = 10, то у дочернего прямоугольника
 //должен быть Offset(5, 5)
-    canvas.drawRect(Offset(1, 1) & Size(30, 30), paint);
+    canvas.drawRect(const Offset(1, 1) & const Size(30, 30), paint);
     canvas.drawLine(Offset.zero, Offset(size.width, size.height), paint);
     //canvas.drawCircle(Offset(size.width, 0), 30, paintCircle);
 //Offset(size.width / 2, size.height / 2) - центр круга в середине конт.

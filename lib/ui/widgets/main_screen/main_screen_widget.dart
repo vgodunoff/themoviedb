@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/foundation/key.dart';
-import 'package:flutter/src/widgets/framework.dart';
+import 'package:themoviedb/ui/widgets/news/news_widget.dart';
+import 'package:themoviedb/ui/widgets/tv_shows_list/tv_show_list_widget.dart';
 
 import '../movie_list/movie_list_widget.dart';
 
@@ -12,16 +12,14 @@ class MainScreenWidget extends StatefulWidget {
 }
 
 class _MainScreenWidgetState extends State<MainScreenWidget> {
-  int _selectedTab = 0;
-  static final List<Widget> _widgetOptions = <Widget>[
-    const Text(
-      'Index 0: Новости',
-    ),
-    MovieListWidget(),
-    const Text(
-      'Index 2: Сериалы',
-    ),
-  ];
+  int _selectedTab = 1;
+  // //static final List<Widget> _widgetOptions = <Widget>[
+  //   const NewsWidget(),
+  //   const MovieListWidget(),
+  //   const Text(
+  //     'Index 2: Сериалы',
+  //   ),
+  // ];
 
   void onSelectedTab(int index) {
     if (_selectedTab == index) return;
@@ -35,18 +33,14 @@ class _MainScreenWidgetState extends State<MainScreenWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('TMDB'),
+        title: const Text('TMDB'),
       ),
       body: IndexedStack(
         index: _selectedTab,
         children: const [
-          Text(
-            'Index 0: Новости',
-          ),
+          NewsWidget(),
           MovieListWidget(),
-          Text(
-            'Index 2: Сериалы',
-          ),
+          TWShowListWidget(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(

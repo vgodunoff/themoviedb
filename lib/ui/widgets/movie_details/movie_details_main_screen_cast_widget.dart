@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/foundation/key.dart';
-import 'package:flutter/src/widgets/framework.dart';
+
 import 'package:themoviedb/resources/resources.dart';
 
 class MovieDetailsMainScreenCastWidget extends StatelessWidget {
@@ -51,7 +50,7 @@ class MovieDetailsMainScreenCastWidget extends StatelessWidget {
                           clipBehavior: Clip.hardEdge,
                           child: Column(
                             children: [
-                              Image(image: AssetImage(AppImages.actor)),
+                              const Image(image: AssetImage(AppImages.actor)),
                               Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Column(
