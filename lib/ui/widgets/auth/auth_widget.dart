@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:themoviedb/Library/Widgets/Inherited/provider.dart';
 import 'package:themoviedb/ui/widgets/auth/auth_model.dart';
 
 import '../../theme/app_button_style.dart';
@@ -108,7 +109,7 @@ class _FormWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     //используем метод read() - этот большой виджет мы изменять не будем
     // мы будем только получать здесь доступ
-    final model = AuthProvider.read(context)?.model;
+    final model = NotifierProvider.read<AuthModel>(context);
 
     const textStyle = TextStyle(fontSize: 16, color: Color(0xFF212529));
     const textFieldDecorator = InputDecoration(
@@ -174,7 +175,7 @@ class _AuthButtonWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     const Color color = Color(0XFF01B4E4);
     //model - watch чтобы менялась тоже кнопочка
-    final model = AuthProvider.watch(context)?.model;
+    final model = NotifierProvider.watch<AuthModel>(context);
     final onPressed =
         model?.canStartAuth == true ? () => model?.auth(context) : null;
     final child = model?.isAuthProgress == true
@@ -209,7 +210,8 @@ class _ErrorMessageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final errorMessage = AuthProvider.watch(context)?.model.errorMessage;
+    final errorMessage =
+        NotifierProvider.watch<AuthModel>(context)?.errorMessage;
     if (errorMessage == null) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(bottom: 20.0),

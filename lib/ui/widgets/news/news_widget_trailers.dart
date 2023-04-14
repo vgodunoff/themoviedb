@@ -78,8 +78,8 @@ class _NewsWidgetTrailersState extends State<NewsWidgetTrailers> {
                                     alignment: Alignment.center,
                                     children: const [
                                       Image(
-                                        //image: AssetImage(AppImages.trailerPreview),
-                                        image: AssetImage(AppImages.minions),
+                                        image: AssetImage(
+                                            AppImages.trailerPreview),
                                       ),
                                       DecoratedBox(
                                         decoration: BoxDecoration(
