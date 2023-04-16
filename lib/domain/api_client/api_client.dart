@@ -362,6 +362,25 @@ on ApiClientExeption catch (e) {
 
     return result;
   }
+
+  Future<PopularMovieResponse> searchMovie(
+      int page, String locale, String query) async {
+    PopularMovieResponse parser(dynamic json) {
+      final jsonMap = json as Map<String, dynamic>;
+      final response = PopularMovieResponse.fromJson(jsonMap);
+      return response;
+    }
+
+    final result = _get('/search/movie', parser, <String, dynamic>{
+      'api_key': _apiKey,
+      'language': locale,
+      'page': page.toString(),
+      'query': query,
+      'include_adult': true.toString()
+    });
+
+    return result;
+  }
 }
 
 extension HttpClientResponseJsonDecode on HttpClientResponse {
