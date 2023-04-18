@@ -1,23 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:themoviedb/domain/api_client/api_client.dart';
 import 'package:themoviedb/domain/entity/movie.dart';
+import 'package:themoviedb/domain/entity/popular_movie_response.dart';
 import 'package:themoviedb/ui/navigation/main_navigation.dart';
 import 'package:intl/intl.dart';
 
-class MovieListModel extends ChangeNotifier {
-  final _apiClient = ApiClient();
-  final _movies = <Movie>[];
-  List<Movie> get movies => List.unmodifiable(_movies);
-  String _locale = '';
-
-  //завели один раз дейтФормат, и теперь не будет постоянно создаваться как если
-  // бы мы использовали в UI конструктор
-  late DateFormat _dateFormat;
-  late int _currentPage;
-  //чтобы ничего не сломалось нужно еще больше контроля или проверок
-  //поэтому заведем еще одну переменную тоталПейдж и _isLoadingInProgress
-  late int _totalPage;
-  var _isLoadingInProgress = false;
 /*
 нам в коде нужна локаль
 но локаль мы здесь взять не можем, ее нужно брать специальными методами
@@ -88,7 +77,24 @@ if (_isLoadingInProgress || _currentPage >= _totalPage) return;
 
 */
 
-  void setupLocale(BuildContext context) {
+class MovieListModel extends ChangeNotifier {
+  final _apiClient = ApiClient();
+  final _movies = <Movie>[];
+  List<Movie> get movies => List.unmodifiable(_movies);
+  String _locale = '';
+  Timer? searchDebounce;
+
+  //завели один раз дейтФормат, и теперь не будет постоянно создаваться как если
+  // бы мы использовали в UI конструктор
+  late DateFormat _dateFormat;
+  late int _currentPage;
+  //чтобы ничего не сломалось нужно еще больше контроля или проверок
+  //поэтому заведем еще одну переменную тоталПейдж и _isLoadingInProgress
+  late int _totalPage;
+  var _isLoadingInProgress = false;
+  String? _searchQuery;
+
+  Future<void> setupLocale(BuildContext context) async {
     final locale = Localizations.localeOf(context).toLanguageTag(); //'ru-RU'
 
     if (_locale == locale) return;
@@ -102,18 +108,36 @@ if (_isLoadingInProgress || _currentPage >= _totalPage) return;
     //когда поменялась локаль обнуляем текущую страницу, так как будем грузить список с начала, очищаем старый список фильмов
     // потому что загрузим этот же список но на другом языке и формате даты
     //когда изменяется локаль _currentPage сбрасываем до нуля
-    _currentPage = 0;
+
+    // _currentPage = 0;
 
     //по умолчанию у нас будет всего одна страница, но мы тоже это изменим
+    // _totalPage = 1;
+    // _movies.clear();
+    // _loadMovies();
+    await _resetList();
+  }
+
+  Future<void> _resetList() async {
+    _currentPage = 0;
     _totalPage = 1;
     _movies.clear();
-    _loadMovies();
+    await _loadNextPage();
   }
 
   String stringFromDate(DateTime? date) =>
       date != null ? _dateFormat.format(date) : '';
 
-  Future<void> _loadMovies() async {
+  Future<PopularMovieResponse> _loadMovies(int nextPage, String locale) async {
+    final query = _searchQuery;
+    if (query == null) {
+      return await _apiClient.popularMovie(nextPage, _locale);
+    } else {
+      return await _apiClient.searchMovie(nextPage, _locale, query);
+    }
+  }
+
+  Future<void> _loadNextPage() async {
     if (_isLoadingInProgress || _currentPage >= _totalPage) return;
     _isLoadingInProgress = true;
     final nextPage = _currentPage + 1; //0+1
@@ -123,7 +147,7 @@ if (_isLoadingInProgress || _currentPage >= _totalPage) return;
       //а все что ниже не выполнится, если будет ошибка/исключение,
       //поэтому и  notifyListeners(); тоже включим сюда
 
-      final moviesResponse = await _apiClient.popularMovie(nextPage, _locale);
+      final moviesResponse = await _loadMovies(nextPage, _locale);
       _movies.addAll(moviesResponse.movies);
       //затем карентПейдж нужно обновить, берем данные из респонса
       _currentPage = moviesResponse.page;
@@ -160,10 +184,55 @@ notifyListeners() заставляет обновить стейт и соотв
     if (index < _movies.length - 1) return;
     //индекс 19 меньше 20-1, т.е. до 19 индекса ничего не делать
     // а на 19 индексе, препоследнем загружаем фильмы еще
-    _loadMovies();
+    _loadNextPage();
   }
 
+/*
+вот мы начинаем искать. что нам нужно делать если мы сюда новый текст попал
+ну во-первых нам нужно будет сбросить абсолютно все результаты, все что есть в методе
+setupLocale:
+ final locale = Localizations.localeOf(context).toLanguageTag(); //'ru-RU'
+    if (_locale == locale) return;
+    _locale = locale;
+    _dateFormat = DateFormat.yMMMMd(locale);
+    _currentPage = 0;
+    _totalPage = 1;
+    _movies.clear();
+    _loadMovies();
+
+нам нужно оставить локаль _locale = locale;
+и дейтФормат _dateFormat = DateFormat.yMMMMd(locale);
+сбрасываем 
+_currentPage = 0;
+    _totalPage = 1;
+    _movies.clear();
+и потом нужно сделать _loadMovies(); но по-другому
+
+вынесим некоторый функционал в метод _resetList
+то есть мы разделили метод setupLocale на два метода.
+оставили все что касается локали в setupLocale
+а все что касается того что после того как мы изменили локаль мы заново начали
+грузить фильмы - мы перенесли в метод _resetList
+
+дальше введем переменную searchQuery
+
+также в поиске есть еще один изъян - когда мы вбиваем сюда что-то очень быстро,
+каждая буква провоцирует новый запрос на сервер. будем от этого избавляться
+для этого нам понадобиться таймер Timer? searchDebounce;
+чтобы код отработал правильно нужно еще сверху добавить searchDebounce?.cancel();
+без этого экран будет мерцать от каждой буквы, хоть это и будет отложенное мерцание
+но после секунды , раз 5 померцает.
+строка searchDebounce?.cancel(); отменяет реакцию на каждую букву и только после
+секунды берутся данные из переменной text, в котором уже набралась комбинация символов
+и только один запрос отправиться, и один раз перерисуется экран
+*/
   Future<void> searchMovie(String text) async {
-    print(text);
+    searchDebounce?.cancel();
+    searchDebounce = Timer(Duration(seconds: 1), () async {
+      final searchQuery = text.isNotEmpty ? text : null;
+      if (_searchQuery == searchQuery) return;
+      _searchQuery = searchQuery;
+      await _resetList();
+    });
   }
 }
